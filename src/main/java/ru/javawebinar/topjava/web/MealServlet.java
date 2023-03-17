@@ -25,8 +25,7 @@ public class MealServlet extends HttpServlet {
     private MealDao dao;
 
     @Override
-    public void init() throws ServletException {
-        super.init();
+    public void init() {
         dao = new InMemoryMealStorage();
     }
 
@@ -34,14 +33,13 @@ public class MealServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         log.debug("redirect to meals");
 
-        String forward = "";
+        String forward;
         String action = request.getParameter("action");
         if (action == null) action = "";
 
         switch (action) {
             case "insert":
                 log.debug("action = insert");
-                request.setAttribute("title", "Add meal");
                 request.setAttribute("meal",
                         new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 100));
                 forward = INSERT_OR_EDIT;
@@ -50,7 +48,6 @@ public class MealServlet extends HttpServlet {
                 int mealId = Integer.parseInt(request.getParameter("id"));
                 log.debug("action = edit, id = {}", mealId);
                 Meal meal = dao.getById(mealId);
-                request.setAttribute("title", "Edit meal");
                 request.setAttribute("meal", meal);
                 forward = INSERT_OR_EDIT;
                 break;
@@ -64,7 +61,7 @@ public class MealServlet extends HttpServlet {
             default:
                 forward = LIST_MEAL;
                 request.setAttribute("mealsToList",
-                        MealsUtil.filteredByStreams(dao.getMealList(), LocalTime.MIN, LocalTime.MAX, MealsUtil.CALORIES_PER_DAY_LIMIT));
+                        MealsUtil.filteredByStreams(dao.getList(), LocalTime.MIN, LocalTime.MAX, MealsUtil.CALORIES_PER_DAY_LIMIT));
                 request.setAttribute("dateTimeFormatter", TimeUtil.DATE_TIME_FORMATTER);
                 break;
         }
@@ -73,7 +70,7 @@ public class MealServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         log.debug("doing post");
         request.setCharacterEncoding("UTF-8");
 

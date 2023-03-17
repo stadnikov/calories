@@ -1,15 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<jsp:useBean id="title" scope="request" type="java.lang.String"/>
 <jsp:useBean id="meal" scope="request" type="ru.javawebinar.topjava.model.Meal"/>
 
 <html lang="ru">
 <head>
-    <title>${title}</title>
+    <title>${meal.id==null?'Add Meal':'Edit Meal'}</title>
 </head>
 <body>
 <h3><a href="index.html">Home</a></h3>
 <hr>
-<h2>${title}</h2>
+<h2>${meal.id==null?'Add Meal':'Edit Meal'}</h2>
 
 <form method="post" action="meals">
     <input type="hidden" name="id" value="${meal.id}">

@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class InMemoryMealStorage implements MealDao {
-    private static AtomicInteger idCounter = new AtomicInteger(0);
+    private AtomicInteger idCounter = new AtomicInteger(0);
     private ConcurrentMap<Integer, Meal> mealMap;
 
     public InMemoryMealStorage() {
@@ -24,14 +24,11 @@ public class InMemoryMealStorage implements MealDao {
     public Meal addOrUpdate(Meal meal) {
         if (meal.getId() == null) {
             int id = idCounter.incrementAndGet();
-            mealMap.put(id,
-                    new Meal(id, meal.getDateTime(), meal.getDescription(), meal.getCalories()));
-            return mealMap.get(id);
-        } else if (mealMap.get(meal.getId().intValue()) != null) {
-            mealMap.put(meal.getId().intValue(), meal);
-            return mealMap.get(meal.getId());
+            mealMap.put(id, new Meal(id, meal.getDateTime(), meal.getDescription(), meal.getCalories()));
+            return meal;
+        } else {
+            return mealMap.replace(meal.getId(), meal) != null ? meal : null;
         }
-        return null;
     }
 
     @Override
@@ -40,7 +37,7 @@ public class InMemoryMealStorage implements MealDao {
     }
 
     @Override
-    public List<Meal> getMealList() {
+    public List<Meal> getList() {
         return new ArrayList<>(mealMap.values());
     }
 
