@@ -22,6 +22,7 @@
     <hr/>
     <h2>Meals</h2>
     <form method="get" action="meals">
+        <input type="hidden" name="action" value="filter">
         From Date:<input type="date" name="startdate" value="${startdate}"/>
         To Date:<input type="date" name="enddate" value="${enddate}"/>
         From Time:<input type="time" name="starttime" value="${starttime}"/>

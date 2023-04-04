@@ -16,14 +16,19 @@ public class SpringMain {
             System.out.println("Bean definition names: " + Arrays.toString(appCtx.getBeanDefinitionNames()));
             AdminRestController adminUserController = appCtx.getBean(AdminRestController.class);
             adminUserController.create(new User(null, "userName", "email1@mail.ru", "password", Role.ADMIN));
-            adminUserController.create(new User(null, "fserName", "email2@mail.ru", "password", Role.ADMIN));
-            adminUserController.create(new User(null, "bserName", "email3@mail.ru", "password", Role.ADMIN));
-            adminUserController.create(new User(null, "zserName", "email4@mail.ru", "password", Role.ADMIN));
+            adminUserController.create(new User(null, "userName", "email3@mail.ru", "password", Role.ADMIN));
+            adminUserController.create(new User(null, "userName", "email2@mail.ru", "password", Role.ADMIN));
+            adminUserController.create(new User(null, "userName", "email5@mail.ru", "password", Role.ADMIN));
+            adminUserController.create(new User(null, "userName", "email4@mail.ru", "password", Role.ADMIN));
+            adminUserController.create(new User(null, "fserName", "email6@mail.ru", "password", Role.ADMIN));
+            adminUserController.create(new User(null, "bserName", "email7@mail.ru", "password", Role.ADMIN));
+            adminUserController.create(new User(null, "zserName", "email8@mail.ru", "password", Role.ADMIN));
             System.out.println(adminUserController.getAll());
-            System.out.println(adminUserController.getByMail("email@mail.ru"));
+            System.out.println(adminUserController.getByMail("email1@mail.ru"));
+            //System.out.println(adminUserController.getByMail("email@mail.ru"));
 
             MealRestController mealRestController = appCtx.getBean(MealRestController.class);
-            System.out.println(mealRestController.getAll());
+            System.out.println(mealRestController.getAllTos());
         }
     }
 }
