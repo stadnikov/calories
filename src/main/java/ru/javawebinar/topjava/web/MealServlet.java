@@ -41,18 +41,11 @@ public class MealServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         request.setCharacterEncoding("UTF-8");
-        String userId = request.getParameter("userid");
-        if ((userId != null) && (!userId.equals("null"))) {
-            log.info("Logged with UserId = {}", userId);
-            SecurityUtil.setAuthUserId(Integer.parseInt(userId));
-        }
-
         if (request.getParameter("dateTime") != null) {
             String id = request.getParameter("id");
-
-            Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id), LocalDateTime.parse(request.getParameter("dateTime")), request.getParameter("description"), Integer.parseInt(request.getParameter("calories")), null
-            );
-
+            Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
+                    LocalDateTime.parse(request.getParameter("dateTime")), request.getParameter("description"),
+                    Integer.parseInt(request.getParameter("calories")));
             if (meal.isNew()) {
                 log.info("Create {}", meal);
                 mealRestController.create(meal);
@@ -61,17 +54,12 @@ public class MealServlet extends HttpServlet {
                 mealRestController.update(meal, meal.getId());
             }
         }
-
         response.sendRedirect("meals");
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
-        LocalDate startDate;
-        LocalDate endDate;
-        LocalTime startTime;
-        LocalTime endTime;
 
         switch (action == null ? "all" : action) {
             case "delete":
@@ -83,26 +71,20 @@ public class MealServlet extends HttpServlet {
             case "create":
             case "update":
                 final Meal meal = "create".equals(action) ?
-                        new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000, SecurityUtil.authUserId()) :
+                        new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000) :
                         mealRestController.get(getId(request));
                 request.setAttribute("meal", meal);
                 request.getRequestDispatcher("/mealForm.jsp").forward(request, response);
                 break;
             case "filter":
                 String filterFromDate = request.getParameter("startdate");
+                LocalDate startDate = StringUtils.hasText(filterFromDate) ? LocalDate.parse(filterFromDate) : null;
                 String filterToDate = request.getParameter("enddate");
+                LocalDate endDate = StringUtils.hasText(filterToDate) ? LocalDate.parse(filterToDate) : null;
                 String filterFromTime = request.getParameter("starttime");
+                LocalTime startTime = StringUtils.hasText(filterFromTime) ? LocalTime.parse(filterFromTime) : null;
                 String filterToTime = request.getParameter("endtime");
-
-                startDate = StringUtils.hasText(filterFromDate) ? LocalDate.parse(filterFromDate) : LocalDate.MIN;
-                endDate = StringUtils.hasText(filterToDate) ? LocalDate.parse(filterToDate) : LocalDate.MAX;
-                startTime = StringUtils.hasText(filterFromTime) ? LocalTime.parse(filterFromTime) : LocalTime.MIN;
-                endTime = StringUtils.hasText(filterToTime) ? LocalTime.parse(filterToTime) : LocalTime.MAX;
-
-                request.setAttribute("startdate", startDate);
-                request.setAttribute("enddate", endDate);
-                request.setAttribute("starttime", startTime);
-                request.setAttribute("endtime", endTime);
+                LocalTime endTime = StringUtils.hasText(filterToTime) ? LocalTime.parse(filterToTime) : null;
 
                 log.info("Filter data: {}-{} {}-{}", startDate, endDate, startTime, endTime);
                 request.setAttribute("meals", mealRestController.getAllFilteredTos(startDate, endDate, startTime, endTime));

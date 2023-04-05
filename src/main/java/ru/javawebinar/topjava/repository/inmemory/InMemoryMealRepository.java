@@ -9,6 +9,7 @@ import ru.javawebinar.topjava.util.MealsUtil;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -23,45 +24,40 @@ public class InMemoryMealRepository implements MealRepository {
     private final AtomicInteger counter = new AtomicInteger(0);
 
     {
-        MealsUtil.meals.forEach(meal -> save(meal.getUserId(), meal));
+        MealsUtil.meals1.forEach(meal -> save(1, meal));
+        MealsUtil.meals2.forEach(meal -> save(2, meal));
     }
 
     @Override
     public Meal save(int userId, Meal meal) {
-        Map<Integer, Meal> innerMap =
-                repository.get(userId) == null ? new ConcurrentHashMap<>() : new ConcurrentHashMap<>(repository.get(userId));
-        Meal mealWithUserId;
         if (meal.isNew()) {
-            mealWithUserId = new Meal(counter.incrementAndGet(), meal.getDateTime(), meal.getDescription(), meal.getCalories(), userId);
-        } else {
-            Meal oldMeal = innerMap.get(meal.getId());
-            if (oldMeal == null) {
-                return null;
+            Meal mealWithId = new Meal(counter.incrementAndGet(), meal.getDateTime(), meal.getDescription(), meal.getCalories());
+            if (repository.get(userId) == null) {
+                repository.put(userId, new ConcurrentHashMap<Integer, Meal>() {{
+                    put(mealWithId.getId(), mealWithId);
+                }});
+            } else {
+                repository.get(userId).put(mealWithId.getId(), mealWithId);
             }
-            mealWithUserId = new Meal(meal.getId(), meal.getDateTime(), meal.getDescription(), meal.getCalories(), userId);
+            return mealWithId;
+        } else {
+            return repository.get(userId).computeIfPresent(meal.getId(),
+                    (id, oldMeal) -> new Meal(meal.getId(), meal.getDateTime(), meal.getDescription(), meal.getCalories()));
         }
-        innerMap.put(mealWithUserId.getId(), mealWithUserId);
-        repository.put(mealWithUserId.getUserId(), innerMap);
-        return mealWithUserId;
+
     }
 
     @Override
     public boolean delete(int userId, int id) {
-        Map<Integer, Meal> innerMap = new ConcurrentHashMap<>(repository.get(userId));
         if (get(userId, id) == null) {
             return false;
         }
-        if (innerMap.remove(id) != null) {
-            repository.put(userId, innerMap);
-            return true;
-        }
-        return false;
+        return repository.get(userId).remove(id) != null;
     }
 
     @Override
     public Meal get(int userId, int id) {
-        Map<Integer, Meal> innerMap = new ConcurrentHashMap<>(repository.get(userId));
-        return innerMap.get(id);
+        return repository.containsKey(userId) ? repository.get(userId).get(id) : null;
     }
 
     @Override
@@ -70,21 +66,20 @@ public class InMemoryMealRepository implements MealRepository {
     }
 
     private List<Meal> getAll(int userId, Predicate<Meal> filterBy) {
-        return getAll(userId, filterBy, Comparator.comparing(Meal::getDateTime).reversed());
-    }
-
-    private List<Meal> getAll(int userId, Predicate<Meal> filterBy, Comparator<Meal> sortedBy) {
-        return repository.get(userId).values().stream()
-                .filter(filterBy)
-                .sorted(sortedBy)
-                .collect(Collectors.toList());
+        if (!repository.containsKey(userId)) {
+            return new ArrayList<>();
+        } else {
+            return repository.get(userId).values().stream()
+                    .filter(filterBy)
+                    .sorted(Comparator.comparing(Meal::getDateTime).reversed())
+                    .collect(Collectors.toList());
+        }
     }
 
     @Override
     public List<Meal> getAllFiltered(int userId, LocalDate startDate, LocalDate endDate) {
         return getAll(userId, m -> DateTimeUtil.isBetweenHalfOpen(LocalDateTime.of(m.getDate(), LocalTime.MIN),
-                        LocalDateTime.of(startDate, LocalTime.MIN), LocalDateTime.of(endDate, LocalTime.MAX)),
-                Comparator.comparing(Meal::getDateTime).reversed());
+                LocalDateTime.of(startDate, LocalTime.MIN), LocalDateTime.of(endDate, LocalTime.MAX)));
     }
 }
 

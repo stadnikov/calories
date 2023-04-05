@@ -23,10 +23,10 @@
     <h2>Meals</h2>
     <form method="get" action="meals">
         <input type="hidden" name="action" value="filter">
-        From Date:<input type="date" name="startdate" value="${startdate}"/>
-        To Date:<input type="date" name="enddate" value="${enddate}"/>
-        From Time:<input type="time" name="starttime" value="${starttime}"/>
-        To Time:<input type="time" name="endtime" value="${endtime}"/>
+        From Date:<input type="date" name="startdate" value="${param.startdate}"/>
+        To Date:<input type="date" name="enddate" value="${param.enddate}"/>
+        From Time:<input type="time" name="starttime" value="${param.starttime}"/>
+        To Time:<input type="time" name="endtime" value="${param.endtime}"/>
         <br/>
         <br/>
         <button onclick="window.history.back()" type="button">Cancel</button>
