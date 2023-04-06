@@ -9,7 +9,7 @@ import ru.javawebinar.topjava.util.MealsUtil;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -30,34 +30,31 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public Meal save(int userId, Meal meal) {
+        repository.computeIfAbsent(userId, v -> new ConcurrentHashMap<>());
+        Map<Integer, Meal> innerMap = repository.get(userId);
         if (meal.isNew()) {
             Meal mealWithId = new Meal(counter.incrementAndGet(), meal.getDateTime(), meal.getDescription(), meal.getCalories());
-            if (repository.get(userId) == null) {
-                repository.put(userId, new ConcurrentHashMap<Integer, Meal>() {{
-                    put(mealWithId.getId(), mealWithId);
-                }});
-            } else {
-                repository.get(userId).put(mealWithId.getId(), mealWithId);
-            }
+            innerMap.put(mealWithId.getId(), mealWithId);
             return mealWithId;
         } else {
-            return repository.get(userId).computeIfPresent(meal.getId(),
+            return innerMap.computeIfPresent(meal.getId(),
                     (id, oldMeal) -> new Meal(meal.getId(), meal.getDateTime(), meal.getDescription(), meal.getCalories()));
         }
-
     }
 
     @Override
     public boolean delete(int userId, int id) {
-        if (get(userId, id) == null) {
+        Map<Integer, Meal> innerMap = repository.get(userId);
+        if (innerMap == null || innerMap.get(id) == null) {
             return false;
         }
-        return repository.get(userId).remove(id) != null;
+        return innerMap.remove(id) != null;
     }
 
     @Override
     public Meal get(int userId, int id) {
-        return repository.containsKey(userId) ? repository.get(userId).get(id) : null;
+        Map<Integer, Meal> innerMap = repository.get(userId);
+        return innerMap != null ? innerMap.get(id) : null;
     }
 
     @Override
@@ -66,10 +63,11 @@ public class InMemoryMealRepository implements MealRepository {
     }
 
     private List<Meal> getAll(int userId, Predicate<Meal> filterBy) {
-        if (!repository.containsKey(userId)) {
-            return new ArrayList<>();
+        Map<Integer, Meal> innerMap = repository.get(userId);
+        if (innerMap == null) {
+            return Collections.emptyList();
         } else {
-            return repository.get(userId).values().stream()
+            return innerMap.values().stream()
                     .filter(filterBy)
                     .sorted(Comparator.comparing(Meal::getDateTime).reversed())
                     .collect(Collectors.toList());
