@@ -1,7 +1,6 @@
 package ru.javawebinar.topjava.service;
 
 import org.junit.AfterClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Stopwatch;
@@ -22,6 +21,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.*;
@@ -34,30 +34,25 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 })
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
-@Ignore
 public class MealServiceTest {
 
     private static final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
     private static final List<String> testsInfo = new ArrayList<>();
-    private static Long totalTestsTime = 0L;
 
     @Rule
     public Stopwatch stopwatch = new Stopwatch() {
 
         @Override
         protected void finished(long nanos, Description description) {
-            totalTestsTime += nanos;
-            testsInfo.add(String.format("%-75s - %5d ms", description, nanos / 1_000_000));
+            String testResult = String.format("%-75s - %5d ms", description, TimeUnit.NANOSECONDS.toMillis(nanos));
+            testsInfo.add(testResult);
+            log.info(testResult);
         }
     };
 
     @AfterClass
     public static void afterTest() {
-        log.info("Tests processing time:");
-        for (String s : testsInfo) {
-            log.info(s);
-        }
-        log.info(String.format("%d tests completed in %d ms", testsInfo.size(), totalTestsTime / 1_000_000));
+        log.info("\r\n" + String.join("\r\n", testsInfo));
     }
 
     @Autowired
