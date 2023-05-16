@@ -16,7 +16,7 @@ import static ru.javawebinar.topjava.util.MealsUtil.DEFAULT_CALORIES_PER_DAY;
         @NamedQuery(name = User.DELETE, query = "DELETE FROM User u WHERE u.id=:id"),
         @NamedQuery(name = User.BY_EMAIL, query = "SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.email=?1"),
         @NamedQuery(name = User.ALL_SORTED, query = "SELECT u FROM User u LEFT JOIN FETCH u.roles ORDER BY u.name, u.email"),
-        @NamedQuery(name = User.WITH_MEALS, query = "SELECT u FROM User u JOIN FETCH u.meals WHERE u.id=:id"),
+        @NamedQuery(name = User.WITH_MEALS, query = "SELECT u FROM User u LEFT JOIN FETCH u.meals m WHERE u.id=:id ORDER BY m.dateTime DESC"),
 })
 @Entity
 @Table(name = "users")
@@ -57,7 +57,7 @@ public class User extends AbstractNamedEntity {
     private int caloriesPerDay = DEFAULT_CALORIES_PER_DAY;
 
     @OneToMany(mappedBy = "user")
-    List<Meal> meals;
+    private List<Meal> meals;
 
     public User() {
     }

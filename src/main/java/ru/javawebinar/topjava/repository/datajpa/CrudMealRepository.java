@@ -10,6 +10,7 @@ import ru.javawebinar.topjava.model.Meal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Transactional(readOnly = true)
 public interface CrudMealRepository extends JpaRepository<Meal, Integer> {
     @Transactional
     @Modifying
@@ -17,16 +18,13 @@ public interface CrudMealRepository extends JpaRepository<Meal, Integer> {
         //    @Query("DELETE FROM Meal m WHERE m.id=:id")
     int delete(@Param("id") int id, @Param("userId") int userId);
 
-    @Transactional
     @Query(name = Meal.ALL_SORTED)
     List<Meal> getAll(@Param("userId") int userId);
 
-    @Transactional
     @Query(name = Meal.GET_BETWEEN)
     List<Meal> getAllBetweenHalfOpen(@Param("startDateTime") LocalDateTime startDateTime,
                                      @Param("endDateTime") LocalDateTime endDateTime, @Param("userId") int userId);
 
-    @Transactional
     @Query(name = Meal.GET_WITH_USER)
-    Meal getMealWithUser(@Param("id") int id, @Param("userId") int userId);
+    Meal getWithUser(@Param("id") int id, @Param("userId") int userId);
 }

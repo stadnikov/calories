@@ -16,13 +16,12 @@ import java.util.List;
 
 public class SpringMain {
     public static void main(String[] args) {
-//        ConfigurableEnvironment environment = new StandardEnvironment();
-//        environment.setActiveProfiles("postgres", "jpa");
-
-        System.setProperty("spring.profiles.default", "hsqldb, datajpa");
+        String[] configLocations = {"spring/spring-app.xml", "spring/spring-db.xml"};
 
         // java 7 automatic resource management (ARM)
-        try (ConfigurableApplicationContext appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml", "spring/spring-db.xml")) {
+        try (ConfigurableApplicationContext appCtx = new ClassPathXmlApplicationContext(configLocations, false, null)) {
+            appCtx.getEnvironment().setActiveProfiles(Profiles.getActiveDbProfile(), Profiles.JDBC);
+            appCtx.refresh();
             System.out.println("Bean definition names: " + Arrays.toString(appCtx.getBeanDefinitionNames()));
             AdminRestController adminUserController = appCtx.getBean(AdminRestController.class);
             adminUserController.create(new User(null, "userName", "email@mail.ru", "password", Role.ADMIN));
