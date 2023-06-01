@@ -4,17 +4,13 @@
 
 <html>
 <jsp:include page="fragments/headTag.jsp"/>
-<head>
-    <title><spring:message code="mealform.title"/></title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
 <body>
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <section>
 
     <h2><spring:message code="${!param.containsKey(\"id\") ? 'mealform.create' : 'mealform.edit'}"/></h2>
     <jsp:useBean id="meal" type="ru.javawebinar.topjava.model.Meal" scope="request"/>
-    <form method="post" action="meals">
+    <form method="post" action="${pageContext.request.contextPath}/meals">
         <input type="hidden" name="id" value="${meal.id}">
         <dl>
             <dt><spring:message code="mealform.datetime"/>:</dt>

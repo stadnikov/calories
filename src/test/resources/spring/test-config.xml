@@ -4,9 +4,11 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <!--bean id="noOpCacheManager" class="org.springframework.cache.support.NoOpCacheManager"/-->
+    <bean id="ehCacheManager" class="org.springframework.cache.support.NoOpCacheManager"/>
 
-    <bean class="org.springframework.beans.factory.config.PropertyOverrideConfigurer">
-        <!--property name="location" value="classpath:beanOverride.cfg"/-->
-    </bean>
+    <beans profile="jpa,datajpa">
+        <bean class="org.springframework.beans.factory.config.PropertyOverrideConfigurer">
+            <property name="location" value="classpath:beanOverride.cfg"/>
+        </bean>
+    </beans>
 </beans>

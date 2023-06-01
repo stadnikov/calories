@@ -1,16 +1,14 @@
 package ru.javawebinar.topjava.service;
 
-import org.junit.Assume;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
 import org.springframework.dao.DataAccessException;
 import org.springframework.test.context.ContextConfiguration;
-import ru.javawebinar.topjava.UserTestData;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
-import ru.javawebinar.topjava.repository.JpaUtil;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.validation.ConstraintViolationException;
@@ -24,21 +22,22 @@ import static ru.javawebinar.topjava.UserTestData.*;
 @ContextConfiguration({
         "classpath:spring/test-config.xml"
 })
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class AbstractUserServiceTest extends AbstractServiceTest {
 
     @Autowired
     protected UserService service;
 
-    @Autowired
-    private CacheManager cacheManager;
+//    @Autowired
+//    private CacheManager cacheManager;
 
-    @Autowired
-    protected JpaUtil jpaUtil;
+//    @Autowired
+//    protected JpaUtil jpaUtil;
 
     @Before
     public void setup() {
-        cacheManager.getCache("users").clear();
-        jpaUtil.clear2ndLevelHibernateCache();
+//        cacheManager.getCache("users").clear();
+//        jpaUtil.clear2ndLevelHibernateCache();
     }
 
     @Test
@@ -69,12 +68,6 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void get() {
-        User user = service.get(USER_ID);
-        USER_MATCHER.assertMatch(user, UserTestData.user);
-    }
-
-    @Test
     public void getNotFound() {
         assertThrows(NotFoundException.class, () -> service.get(NOT_FOUND));
     }
@@ -86,21 +79,33 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void update() {
+    public void a1update() {
         User updated = getUpdated();
         service.update(updated);
-        USER_MATCHER.assertMatch(service.get(USER_ID), getUpdated());
+        USER_MATCHER.assertMatch(service.getAll(), guest, getUpdated(), user);
     }
 
     @Test
-    public void getAll() {
+    public void a2getAll() {
         List<User> all = service.getAll();
         USER_MATCHER.assertMatch(all, admin, guest, user);
     }
 
     @Test
+    public void a3update() {
+        User updated = getUpdated();
+        service.update(updated);
+        USER_MATCHER.assertMatch(service.get(ADMIN_ID), getUpdated());
+    }
+
+    @Test
+    public void a4get() {
+        User user = service.get(ADMIN_ID);
+        USER_MATCHER.assertMatch(user, admin);
+    }
+
+    @Test
     public void createWithException() throws Exception {
-        Assume.assumeFalse(isJdbc());
         validateRootCause(ConstraintViolationException.class, () -> service.create(new User(null, "  ", "mail@yandex.ru", "password", Role.USER)));
         validateRootCause(ConstraintViolationException.class, () -> service.create(new User(null, "User", "  ", "password", Role.USER)));
         validateRootCause(ConstraintViolationException.class, () -> service.create(new User(null, "User", "mail@yandex.ru", "  ", Role.USER)));
