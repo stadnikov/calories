@@ -14,7 +14,6 @@ import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 import ru.javawebinar.topjava.util.ValidationUtil;
 
-import javax.validation.ConstraintViolation;
 import java.util.*;
 
 @Repository
@@ -42,13 +41,7 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     @Transactional
     public User save(User user) {
-        Set<ConstraintViolation<User>> violations = ValidationUtil.validator.validate(user);
-        for (ConstraintViolation<User> violation : violations) {
-            throw new javax.validation.ConstraintViolationException(String.format(
-                    "Error in property: [%s], value: [%s], message: [%s]",
-                    violation.getPropertyPath(), violation.getInvalidValue(), violation.getMessage()), violations);
-        }
-
+        ValidationUtil.jdbcValidator(user);
         BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(user);
         if (user.isNew()) {
             Number newKey = insertUser.executeAndReturnKey(parameterSource);

@@ -5,8 +5,6 @@ import org.springframework.stereotype.Repository;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 @Repository
@@ -49,7 +47,7 @@ public class DataJpaUserRepository implements UserRepository {
         User user = crudRepository.getWithMeals(id);
         //fix duplicate meals
         if (user != null) {
-            user.setMeals(new ArrayList<>(new LinkedHashSet<>(user.getMeals())));
+            user.setMeals(user.getMeals().stream().distinct().toList());
         }
         return user;
     }

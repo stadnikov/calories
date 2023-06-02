@@ -13,10 +13,8 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.util.ValidationUtil;
 
-import javax.validation.ConstraintViolation;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 @Repository
 @Transactional(readOnly = true)
@@ -42,16 +40,7 @@ public class JdbcMealRepository implements MealRepository {
     @Override
     @Transactional
     public Meal save(Meal meal, int userId) {
-        Set<ConstraintViolation<Meal>> violations = ValidationUtil.validator.validate(meal);
-        for (ConstraintViolation<Meal> violation : violations) {
-            //fix user=null
-            if (!violation.getPropertyPath().toString().equals("user")) {
-                throw new javax.validation.ConstraintViolationException(String.format(
-                        "Error in property: [%s], value: [%s], message: [%s]",
-                        violation.getPropertyPath(), violation.getInvalidValue(), violation.getMessage()), violations);
-            }
-        }
-
+        ValidationUtil.jdbcValidator(meal);
         MapSqlParameterSource map = new MapSqlParameterSource()
                 .addValue("id", meal.getId())
                 .addValue("description", meal.getDescription())
