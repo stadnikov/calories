@@ -66,7 +66,7 @@ public class ValidationUtil {
     public static <T> void jdbcValidator(T object) {
         Set<ConstraintViolation<T>> violations = ValidationUtil.validator.validate(object);
         if (!violations.isEmpty()) {
-            throw new ConstraintViolationException("Error in validation", violations);
+            throw new ConstraintViolationException(violations);
         }
     }
 }
