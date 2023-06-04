@@ -1,4 +1,4 @@
 package ru.javawebinar.topjava.model;
 
-public interface UserChecks {
+public interface WithoutUserChecks {
 }
