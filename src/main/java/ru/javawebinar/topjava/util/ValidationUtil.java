@@ -4,7 +4,6 @@ package ru.javawebinar.topjava.util;
 import org.springframework.core.NestedExceptionUtils;
 import org.springframework.lang.NonNull;
 import ru.javawebinar.topjava.model.AbstractBaseEntity;
-import ru.javawebinar.topjava.model.WithoutUserChecks;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.validation.*;
@@ -65,7 +64,7 @@ public class ValidationUtil {
     }
 
     public static <T> void validateWithoutUser(T object) {
-        Set<ConstraintViolation<T>> violations = ValidationUtil.validator.validate(object, WithoutUserChecks.class);
+        Set<ConstraintViolation<T>> violations = ValidationUtil.validator.validate(object);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }
