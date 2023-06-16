@@ -4,14 +4,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
+import ru.javawebinar.topjava.to.MealTo;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
+import java.util.Collection;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -52,7 +55,7 @@ class MealRestControllerTest extends AbstractControllerTest {
         perform(MockMvcRequestBuilders.get(REST_URL))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(MEAL_MATCHER.contentJson(meals));
+                .andExpect(getMealToMatcher(mealsTo));
     }
 
     @Test
@@ -84,31 +87,41 @@ class MealRestControllerTest extends AbstractControllerTest {
     @Test
     void getBetween() throws Exception {
         String parameters = "?startDate=2010-01-01&startTime=00:00&endDate=2020-01-30&endTime=13:01";
-
         perform(MockMvcRequestBuilders.get(REST_URL + "filter" + parameters))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(MEAL_MATCHER.contentJson(List.of(meal2, meal1)));
+                .andExpect(getMealToMatcher(List.of(mealTo2, mealTo1)));
+    }
+
+    ResultMatcher getMealToMatcher(Collection<MealTo> meals) {
+        return MEALTO_MATCHER.contentJson(meals);
     }
 
     @Test
     void getBetweenWithNullTime() throws Exception {
         String parameters = "?startDate=2010-01-01&startTime=&endDate=2020-01-30";
-
         perform(MockMvcRequestBuilders.get(REST_URL + "filter" + parameters))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(MEAL_MATCHER.contentJson(List.of(meal3, meal2, meal1)));
+                .andExpect(getMealToMatcher(List.of(mealTo3, mealTo2, mealTo1)));
     }
 
     @Test
     void getBetweenWithNull() throws Exception {
         String parameters = "?startDate=&startTime=";
-
         perform(MockMvcRequestBuilders.get(REST_URL + "filter" + parameters))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(MEAL_MATCHER.contentJson(meals));
+                .andExpect(getMealToMatcher(mealsTo));
+    }
+
+    @Test
+    void getBetweenPartialWithExcess() throws Exception {
+        String parameters = "?startDate=2020-01-31&startTime=00:00&endDate=2020-01-31&endTime=13:01";
+        perform(MockMvcRequestBuilders.get(REST_URL + "filter" + parameters))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(getMealToMatcher(List.of(mealTo6, mealTo5, mealTo4)));
     }
 
 }

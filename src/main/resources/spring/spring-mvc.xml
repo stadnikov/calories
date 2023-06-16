@@ -7,8 +7,8 @@
 
     <bean class="ru.javawebinar.topjava.web.json.JacksonObjectMapper" id="objectMapper" factory-method="getMapper"/>
 
-    <bean id="customLocalDateFormatter" class="ru.javawebinar.topjava.util.formatter.CustomLocalDate"/>
-    <bean id="customLocalTimeFormatter" class="ru.javawebinar.topjava.util.formatter.CustomLocalTime"/>
+    <bean id="customLocalDateFormatter" class="ru.javawebinar.topjava.util.formatter.CustomLocalDateFormatter"/>
+    <bean id="customLocalTimeFormatter" class="ru.javawebinar.topjava.util.formatter.CustomLocalTimeFormatter"/>
 
     <bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
         <property name="formatters">
