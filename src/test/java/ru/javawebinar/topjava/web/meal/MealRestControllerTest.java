@@ -30,7 +30,7 @@ class MealRestControllerTest extends AbstractControllerTest {
     private static final String REST_URL = MealRestController.REST_URL + '/';
 
     @Autowired
-    MealService mealService;
+    private MealService mealService;
 
     @Test
     void get() throws Exception {
@@ -94,7 +94,7 @@ class MealRestControllerTest extends AbstractControllerTest {
     }
 
     ResultMatcher getMealToMatcher(Collection<MealTo> meals) {
-        return MEALTO_MATCHER.contentJson(meals);
+        return MEAL_TO_MATCHER.contentJson(meals);
     }
 
     @Test

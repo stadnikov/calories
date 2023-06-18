@@ -2,24 +2,28 @@
 
 Java Enterprise Online Project 
 ===============================
-Get all meals for current user:
+## Working with Meal REST Api
+
+**Get all** meals for current user:
+
 curl http://localhost:8080/topjava/rest/meals
 
-Get specific (in this example meal = 100005) meal for current user:
+**Get specific** (in this example meal = 100005) meal for current user:
+
 curl http://localhost:8080/topjava/rest/meals/100005
 
-Delete specific (in this example meal = 100005) meal for current user:
+**Delete specific** (in this example meal = 100005) meal for current user:
+
 curl -X DELETE http://localhost:8080/topjava/rest/meals/100005
 
-Create new meal with provided json object for current user:
-curl -d "{\"dateTime\":\"2023-06-14T06:12\",\"description\":\"test\",\"calories\":1000}" -H "Content-Type:
-application/json" http://localhost:8080/topjava/rest/meals
+**Create new** meal with provided json object for current user:
 
-Update existing meal (in this example meal = 100012) with provided json object for current user:
-curl -d "{\"dateTime\":\"2023-06-14T06:12\",\"description\":\"test\",\"calories\":1234}" -H "Content-Type:
-application/json" -X PUT http://localhost:8080/topjava/rest/meals/100012
+curl -d "{\"dateTime\":\"2023-06-14T06:12\",\"description\":\"test\",\"calories\":1000}" -H "Content-Type:application/json" http://localhost:8080/topjava/rest/meals
 
-Filter current user meals with specific fields (startDate, endDate, startTime, endTime), if field is not exist rest
-api will use default value:
-curl "http://localhost:8080/topjava/rest/meals/filter/?startDate=2010-01-01&startTime=00:00&endDate=2020-01-
-31&endTime=13:01"
+**Update existing** meal (in this example meal = 100012) with provided json object for current user:
+
+curl -d "{\"dateTime\":\"2023-06-14T06:12\",\"description\":\"test\",\"calories\":1234}" -H "Content-Type:application/json" -X PUT http://localhost:8080/topjava/rest/meals/100012
+
+**Filter** meals for current user with specific fields (startDate, endDate, startTime, endTime), if field is not exist rest api will use default value:
+
+curl "http://localhost:8080/topjava/rest/meals/filter/?startDate=2010-01-01&startTime=00:00&endDate=2020-01-31&endTime=13:01"
