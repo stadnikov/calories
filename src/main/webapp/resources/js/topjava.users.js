@@ -45,3 +45,22 @@ $(function () {
         })
     );
 });
+
+function userActive(userid, checkbox) {
+    if (checkbox.checked) {
+        updateEnabled(userid, true);
+        successNoty("Enabling user");
+    } else {
+        updateEnabled(userid, false);
+        successNoty("Disabling user");
+    }
+}
+
+function updateEnabled(userid, value) {
+    $.ajax({
+        type: "PATCH",
+        url: ctx.ajaxUrl + userid + "?enabled="+value
+    }).done(function () {
+        updateTable();
+    });
+}
