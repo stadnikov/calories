@@ -18,7 +18,7 @@ import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalTime;
 
 @RestController
 @RequestMapping(value = "/meals", produces = MediaType.APPLICATION_JSON_VALUE)
-public class MealUIController extends AbstractMealController{
+public class MealUIController extends AbstractMealController {
 
     @Override
     @GetMapping("/all")

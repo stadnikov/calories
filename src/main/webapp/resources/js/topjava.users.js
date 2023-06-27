@@ -5,6 +5,8 @@ const ctx = {
     ajaxUrl: userAjaxUrl
 };
 
+doUpdate = doUserUpdate;
+
 // $(document).ready(function () {
 $(function () {
     makeEditable(
@@ -46,21 +48,29 @@ $(function () {
     );
 });
 
-function userActive(userid, checkbox) {
-    if (checkbox.checked) {
-        updateEnabled(userid, true);
-        successNoty("Enabling user");
-    } else {
-        updateEnabled(userid, false);
-        successNoty("Disabling user");
-    }
+function userActive(userId, checkbox) {
+    updateEnabled(userId, checkbox.checked);
 }
 
-function updateEnabled(userid, value) {
+function updateEnabled(userId, value) {
     $.ajax({
         type: "PATCH",
-        url: ctx.ajaxUrl + userid + "?enabled="+value
-    }).done(function () {
-        updateTable();
-    });
+        url: ctx.ajaxUrl + userId + "?enabled=" + value
+    })
+        .done(function () {
+            successNoty(value ? "Enabling user" : "Disabling user");
+            //repaint element
+            let element = document.getElementById(userId);
+            element.setAttribute('enabled-user', value);
+        })
+        .fail(function (jqXHR) {
+            if (jqXHR.status == 500 || jqXHR.status == 0) {
+                // internal server error or internet connection broke
+                failNoty(jqXHR);
+            }
+        });
+}
+
+function doUserUpdate() {
+    updateTable("");
 }

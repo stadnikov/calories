@@ -16,19 +16,19 @@
     <form id="filterMealForm">
         <dl>
             <dt><spring:message code="meal.startDate"/>:</dt>
-            <dd><input type="date" name="startDate" value="${param.startDate}"></dd>
+            <dd><input type="date" name="startDate"></dd>
         </dl>
         <dl>
             <dt><spring:message code="meal.endDate"/>:</dt>
-            <dd><input type="date" name="endDate" value="${param.endDate}"></dd>
+            <dd><input type="date" name="endDate"></dd>
         </dl>
         <dl>
             <dt><spring:message code="meal.startTime"/>:</dt>
-            <dd><input type="time" name="startTime" value="${param.startTime}"></dd>
+            <dd><input type="time" name="startTime"></dd>
         </dl>
         <dl>
             <dt><spring:message code="meal.endTime"/>:</dt>
-            <dd><input type="time" name="endTime" value="${param.endTime}"></dd>
+            <dd><input type="time" name="endTime"></dd>
         </dl>
         <div class="modal-footer">
             <button type="button" class="btn btn-primary" onclick="filterMeal()">
@@ -81,7 +81,7 @@
                 <button type="button" class="close" data-dismiss="modal" onclick="closeNoty()">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="detailsMealForm">
+                <form id="detailsForm">
                     <input type="hidden" id="id" name="id">
 
                     <div class="form-group">
@@ -108,7 +108,7 @@
                     <span class="fa fa-close"></span>
                     <spring:message code="common.cancel"/>
                 </button>
-                <button type="button" class="btn btn-primary" onclick="saveMeal()">
+                <button type="button" class="btn btn-primary" onclick="save()">
                     <span class="fa fa-check"></span>
                     <spring:message code="common.save"/>
                 </button>
