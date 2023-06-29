@@ -1,5 +1,4 @@
 let form;
-let doUpdate;
 
 function makeEditable(datatableApi) {
     ctx.datatableApi = datatableApi;

@@ -5,8 +5,6 @@ const ctx = {
     ajaxUrl: userAjaxUrl
 };
 
-doUpdate = doUserUpdate;
-
 // $(document).ready(function () {
 $(function () {
     makeEditable(
@@ -49,28 +47,21 @@ $(function () {
 });
 
 function userActive(userId, checkbox) {
-    updateEnabled(userId, checkbox.checked);
-}
-
-function updateEnabled(userId, value) {
     $.ajax({
         type: "PATCH",
-        url: ctx.ajaxUrl + userId + "?enabled=" + value
+        url: ctx.ajaxUrl + userId + "?enabled=" + checkbox.checked
     })
         .done(function () {
-            successNoty(value ? "Enabling user" : "Disabling user");
+            successNoty(checkbox.checked ? "Enabling user" : "Disabling user");
             //repaint element
             let element = document.getElementById(userId);
-            element.setAttribute('enabled-user', value);
+            element.setAttribute('enabled-user', checkbox.checked);
         })
         .fail(function (jqXHR) {
-            if (jqXHR.status == 500 || jqXHR.status == 0) {
-                // internal server error or internet connection broke
-                failNoty(jqXHR);
-            }
+            checkbox.checked = !checkbox.checked;
         });
 }
 
-function doUserUpdate() {
+function doUpdate() {
     updateTable("");
 }

@@ -5,8 +5,6 @@ const ctx = {
     ajaxUrl: mealAjaxUrl
 };
 
-doUpdate = doMealUpdate;
-
 // $(document).ready(function () {
 $(function () {
     makeEditable(
@@ -42,7 +40,6 @@ $(function () {
     );
 });
 
-
 let filterForm = $('#filterMealForm');
 let filterParams;
 
@@ -60,7 +57,7 @@ function filterMealReset() {
     successNoty("Filter reset");
 }
 
-function doMealUpdate() {
+function doUpdate() {
     if (filterParams != "" && filterParams !== undefined) {
         updateTable(filterParams);
     } else {
