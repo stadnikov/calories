@@ -12,6 +12,15 @@ const ctx = {
     }
 }
 
+function showDateTimePicker() {
+    jQuery('#startDate').datetimepicker({
+        timepicker:false,
+        format:'d.m.Y',
+        lang: 'ru'
+    });
+    jQuery('#startDate').datetimepicker('show'); //support hide,show and destroy command
+}
+
 function clearFilter() {
     $("#filter")[0].reset();
     $.get(mealAjaxUrl, updateTableByData);
@@ -20,11 +29,22 @@ function clearFilter() {
 $(function () {
     makeEditable(
         $("#datatable").DataTable({
+            "ajax": {
+                "url": mealAjaxUrl,
+                "dataSrc": ""
+            },
             "paging": false,
             "info": true,
             "columns": [
                 {
-                    "data": "dateTime"
+                    "data": "dateTime",
+                    "render": function (date, type, row) {
+                        if (type === "display") {
+                            return date.replace("T", " ");
+                        }
+                        return date;
+                    }
+
                 },
                 {
                     "data": "description"
@@ -33,12 +53,14 @@ $(function () {
                     "data": "calories"
                 },
                 {
-                    "defaultContent": "Edit",
-                    "orderable": false
+                    "orderable": false,
+                    "defaultContent": "",
+                    "render": renderEditBtn
                 },
                 {
-                    "defaultContent": "Delete",
-                    "orderable": false
+                    "orderable": false,
+                    "defaultContent": "",
+                    "render": renderDeleteBtn
                 }
             ],
             "order": [
@@ -46,7 +68,11 @@ $(function () {
                     0,
                     "desc"
                 ]
-            ]
+            ],
+            "createdRow": function (row, data, dataIndex) {
+                $(row).attr("data-meal-excess", data.excess);
+            }
+
         })
     );
 });
