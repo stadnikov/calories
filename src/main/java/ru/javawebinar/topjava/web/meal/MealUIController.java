@@ -7,17 +7,18 @@ import org.springframework.lang.Nullable;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.javawebinar.topjava.model.Meal;
+import ru.javawebinar.topjava.to.BaseTo;
 import ru.javawebinar.topjava.to.MealTo;
+import ru.javawebinar.topjava.web.ValidationErrorHelper;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/profile/meals", produces = MediaType.APPLICATION_JSON_VALUE)
-public class MealUIController extends AbstractMealController {
+public class MealUIController extends AbstractMealController implements ValidationErrorHelper {
 
     @Override
     @GetMapping
@@ -41,19 +42,7 @@ public class MealUIController extends AbstractMealController {
     @PostMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<String> create(@Valid MealTo mealTo, BindingResult result) {
-        if (result.hasErrors()) {
-            java.lang.String errorFieldsMsg = result.getFieldErrors().stream()
-                    .map(fe -> java.lang.String.format("[%s] %s", fe.getField(), fe.getDefaultMessage()))
-                    .collect(Collectors.joining("<br>"));
-            return org.springframework.http.ResponseEntity.unprocessableEntity().body(errorFieldsMsg);
-        }
-
-        if (mealTo.isNew()) {
-            super.create(mealTo);
-        } else {
-            super.update(mealTo, mealTo.id());
-        }
-        return ResponseEntity.ok().build();
+        return processValidationError(mealTo, result);
     }
 
     @Override
@@ -64,5 +53,14 @@ public class MealUIController extends AbstractMealController {
             @RequestParam @Nullable LocalDate endDate,
             @RequestParam @Nullable LocalTime endTime) {
         return super.getBetween(startDate, startTime, endDate, endTime);
+    }
+
+    @Override
+    public <T extends BaseTo> void doAction(T t) {
+        if (t.isNew()) {
+            super.create((MealTo) t);
+        } else {
+            super.update((MealTo) t, t.id());
+        }
     }
 }

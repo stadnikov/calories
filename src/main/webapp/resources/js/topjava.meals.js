@@ -1,5 +1,18 @@
 const mealAjaxUrl = "profile/meals/";
 
+function processSerializedData(data) {
+    for (key in data) {
+        if (key < 2) { //process Dates - 0,1 indexes
+            let value = data[key].value;
+            if (value.length == 10) { //no or invalid Date
+                const dateParams = value.split(".");
+                data[key].value = dateParams[2] + "-" + dateParams[1] + "-" + dateParams[0];
+            }
+        }
+    }
+    return data;
+}
+
 // https://stackoverflow.com/a/5064235/548473
 const ctx = {
     ajaxUrl: mealAjaxUrl,
@@ -7,19 +20,37 @@ const ctx = {
         $.ajax({
             type: "GET",
             url: mealAjaxUrl + "filter",
-            data: $("#filter").serialize()
+            data: processSerializedData($("#filter").serializeArray())
         }).done(updateTableByData);
     }
 }
 
-function showDateTimePicker() {
-    jQuery('#startDate').datetimepicker({
-        timepicker:false,
-        format:'d.m.Y',
+function showDateTimePicker(id) {
+    jQuery(id).datetimepicker({
+        format: 'd.m.Y H:i',
         lang: 'ru'
     });
-    jQuery('#startDate').datetimepicker('show'); //support hide,show and destroy command
+    jQuery(id).datetimepicker('show');
 }
+
+function showDatePicker(id) {
+    jQuery(id).datetimepicker({
+        timepicker: false,
+        format: 'd.m.Y',
+        lang: 'ru'
+    });
+    jQuery(id).datetimepicker('show');
+}
+
+function showTimePicker(id) {
+    jQuery(id).datetimepicker({
+        datepicker: false,
+        format: 'H:i',
+        lang: 'ru'
+    });
+    jQuery(id).datetimepicker('show');
+}
+
 
 function clearFilter() {
     $("#filter")[0].reset();
@@ -39,10 +70,10 @@ $(function () {
                 {
                     "data": "dateTime",
                     "render": function (date, type, row) {
-                        if (type === "display") {
-                            return date.replace("T", " ");
-                        }
-                        return date;
+                         if (type === "display") {
+                             return isoToDate(date);
+                         }
+                         return date;
                     }
 
                 },

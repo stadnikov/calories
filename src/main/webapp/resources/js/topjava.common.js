@@ -13,20 +13,29 @@ function makeEditable(datatableApi) {
 }
 
 function add() {
-    $("#modalTitle").html(i18n[$(location).attr('pathname') == "/topjava/users"?"addTitle":"addMealTitle"]);
+    $("#modalTitle").html(i18n[$(location).attr('pathname') == "/topjava/users" ? "addTitle" : "addMealTitle"]);
     form.find(":input").val("");
     $("#editRow").modal();
 }
 
 function updateRow(id) {
     form.find(":input").val("");
-    $("#modalTitle").html(i18n[$(location).attr('pathname') == "/topjava/users"?"editTitle":"editMealTitle"]);
+    $("#modalTitle").html(i18n[$(location).attr('pathname') == "/topjava/users" ? "editTitle" : "editMealTitle"]);
     $.get(ctx.ajaxUrl + id, function (data) {
         $.each(data, function (key, value) {
+            if (key == 'dateTime') {
+                value = isoToDate(value);
+            }
             form.find("input[name='" + key + "']").val(value);
         });
         $('#editRow').modal();
     });
+}
+
+function isoToDate(iso) {
+    //https://stackoverflow.com/questions/61653453/convert-date-string-from-iso-8601-format-yyyy-mm-ddthhmmss-sssz-to-dd-mm-y
+    const dateStr = iso, [yyyy, mm, dd, hh, mi] = dateStr.split(/[/:\-T]/);
+    return `${dd}.${mm}.${yyyy} ${hh}:${mi}`;
 }
 
 function deleteRow(id) {
@@ -45,11 +54,26 @@ function updateTableByData(data) {
     ctx.datatableApi.clear().rows.add(data).draw();
 }
 
+function processModalSerializedData(data) {
+    for (key in data) {
+        if (key == 1) {
+            let data1 = data[key].value;
+            //len should be 16
+            if (data1.length == 16) {
+                let dateAndTime = data1.split(" "); // 0-date 1-time
+                let dateParams = dateAndTime[0].split(".");
+                data[key].value = dateParams[2] + "-" + dateParams[1] + "-" + dateParams[0] + "T" + dateAndTime[1];
+            }
+        }
+    }
+    return data;
+}
+
 function save() {
     $.ajax({
         type: "POST",
         url: ctx.ajaxUrl,
-        data: form.serialize()
+        data: processModalSerializedData(form.serializeArray())
     }).done(function () {
         $("#editRow").modal("hide");
         ctx.updateTable();
