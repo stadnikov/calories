@@ -13,14 +13,14 @@ function makeEditable(datatableApi) {
 }
 
 function add() {
-    $("#modalTitle").html(i18n[$(location).attr('pathname') == "/topjava/users" ? "addTitle" : "addMealTitle"]);
+    $("#modalTitle").html(i18n["addTitle"]);
     form.find(":input").val("");
     $("#editRow").modal();
 }
 
 function updateRow(id) {
     form.find(":input").val("");
-    $("#modalTitle").html(i18n[$(location).attr('pathname') == "/topjava/users" ? "editTitle" : "editMealTitle"]);
+    $("#modalTitle").html(i18n["editTitle"]);
     $.get(ctx.ajaxUrl + id, function (data) {
         $.each(data, function (key, value) {
             if (key == 'dateTime') {
@@ -56,13 +56,12 @@ function updateTableByData(data) {
 
 function processModalSerializedData(data) {
     for (key in data) {
-        if (key == 1) {
+        if (data[key].name == "dateTime") {
             let data1 = data[key].value;
-            //len should be 16
             if (data1.length == 16) {
                 let dateAndTime = data1.split(" "); // 0-date 1-time
                 let dateParams = dateAndTime[0].split(".");
-                data[key].value = dateParams[2] + "-" + dateParams[1] + "-" + dateParams[0] + "T" + dateAndTime[1];
+                data[key].value = dateParams[2] + "-" + dateParams[1] + "-" + dateParams[0] + " " + dateAndTime[1];
             }
         }
     }

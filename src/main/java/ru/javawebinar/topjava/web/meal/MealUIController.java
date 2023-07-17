@@ -7,9 +7,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.to.BaseTo;
 import ru.javawebinar.topjava.to.MealTo;
-import ru.javawebinar.topjava.web.ValidationErrorHelper;
+import ru.javawebinar.topjava.util.ValidationUtil;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
@@ -18,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/profile/meals", produces = MediaType.APPLICATION_JSON_VALUE)
-public class MealUIController extends AbstractMealController implements ValidationErrorHelper {
+public class MealUIController extends AbstractMealController {
 
     @Override
     @GetMapping
@@ -41,8 +40,18 @@ public class MealUIController extends AbstractMealController implements Validati
 
     @PostMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<String> create(@Valid MealTo mealTo, BindingResult result) {
-        return processValidationError(mealTo, result);
+    public ResponseEntity<String> createOrUpdate(@Valid Meal meal, BindingResult result) {
+        if (result.hasErrors()) {
+            return ValidationUtil.getValidationError(result);
+        }
+
+        if (meal.isNew()) {
+            super.create(meal);
+        } else {
+            super.update(meal, meal.id());
+        }
+
+        return ResponseEntity.ok().build();
     }
 
     @Override
@@ -53,14 +62,5 @@ public class MealUIController extends AbstractMealController implements Validati
             @RequestParam @Nullable LocalDate endDate,
             @RequestParam @Nullable LocalTime endTime) {
         return super.getBetween(startDate, startTime, endDate, endTime);
-    }
-
-    @Override
-    public <T extends BaseTo> void doAction(T t) {
-        if (t.isNew()) {
-            super.create((MealTo) t);
-        } else {
-            super.update((MealTo) t, t.id());
-        }
     }
 }
