@@ -33,21 +33,28 @@ function showDateTimePicker(id) {
     jQuery(id).datetimepicker('show');
 }
 
-let minimumDate = '01.01.2000';
+let minimumDate;
+let maximumDate;
 
 function showDatePicker(id) {
     jQuery(id).datetimepicker({
         onShow: function (ct) {
             if (id.startsWith('#end')) {
-                this.setOptions({
-                    minDate: minimumDate,
-                    formatDate:'d.m.Y'
-                });
+                if ((minimumDate = $('#startDate').val()).trim() != '') {
+                    this.setOptions({
+                        minDate: minimumDate,
+                        formatDate: 'd.m.Y'
+                    });
+                }
             }
-        },
-        onSelectDate: function (ct) {
+
             if (id.startsWith('#start')) {
-                minimumDate = $(id).val();
+                if ((maximumDate = $('#endDate').val()).trim() != '') {
+                    this.setOptions({
+                        maxDate: maximumDate,
+                        formatDate: 'd.m.Y'
+                    })
+                }
             }
         },
         timepicker: false,
@@ -57,20 +64,26 @@ function showDatePicker(id) {
     jQuery(id).datetimepicker('show');
 }
 
-let minimumTime = '00:00';
+let minimumTime;
+let maximumTime;
 
 function showTimePicker(id) {
     jQuery(id).datetimepicker({
         onShow: function (ct) {
             if (id.startsWith('#end')) {
-                this.setOptions({
-                    minTime: minimumTime
-                });
+                if ((minimumTime = $('#startTime').val()).trim() != '') {
+                    this.setOptions({
+                        minTime: minimumTime
+                    });
+                }
             }
-        },
-        onSelectTime: function (ct) {
+
             if (id.startsWith('#start')) {
-                minimumTime = $(id).val();
+                if ((maximumTime = $('#endTime').val()).trim() != '') {
+                    this.setOptions({
+                        maxTime: maximumTime
+                    })
+                }
             }
         },
         datepicker: false,
