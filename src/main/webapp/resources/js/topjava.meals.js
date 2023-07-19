@@ -33,8 +33,8 @@ function showDateTimePicker(id) {
     jQuery(id).datetimepicker('show');
 }
 
-let minimumDate;
-let maximumDate;
+// let minimumDate;
+// let maximumDate;
 
 function showDatePicker(id) {
     jQuery(id).datetimepicker({
@@ -42,8 +42,7 @@ function showDatePicker(id) {
             if (id.startsWith('#end')) {
                 if ((minimumDate = $('#startDate').val()).trim() != '') {
                     this.setOptions({
-                        minDate: minimumDate,
-                        formatDate: 'd.m.Y'
+                        minDate: minimumDate
                     });
                 }
             }
@@ -51,14 +50,14 @@ function showDatePicker(id) {
             if (id.startsWith('#start')) {
                 if ((maximumDate = $('#endDate').val()).trim() != '') {
                     this.setOptions({
-                        maxDate: maximumDate,
-                        formatDate: 'd.m.Y'
+                        maxDate: maximumDate
                     })
                 }
             }
         },
         timepicker: false,
         format: 'd.m.Y',
+        formatDate: 'd.m.Y',
         lang: 'ru'
     });
     jQuery(id).datetimepicker('show');
