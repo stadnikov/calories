@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava.web.interceptor;
 
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import ru.javawebinar.topjava.AuthorizedUser;
@@ -20,6 +21,7 @@ public class ModelInterceptor implements HandlerInterceptor {
             if (authorizedUser != null) {
                 modelAndView.getModelMap().addAttribute("userTo", authorizedUser.getUserTo());
             }
+            modelAndView.getModelMap().addAttribute("language", LocaleContextHolder.getLocale());
         }
     }
 }
