@@ -67,6 +67,8 @@ $(function () {
 //  http://xdsoft.net/jqplugins/datetimepicker/
     var startDate = $('#startDate');
     var endDate = $('#endDate');
+    var currentLanguage = getCookie('org.springframework.web.servlet.i18n.CookieLocaleResolver.LOCALE');
+    jQuery.datetimepicker.setLocale(currentLanguage);
     startDate.datetimepicker({
         timepicker: false,
         format: 'Y-m-d',
@@ -112,4 +114,10 @@ $(function () {
     $('#dateTime').datetimepicker({
         format: 'Y-m-d H:i'
     });
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
 });

@@ -31,7 +31,7 @@ public class ProfileUIController extends AbstractUserController {
             try {
                 super.update(userTo, SecurityUtil.authUserId());
             } catch (DataIntegrityViolationException dive) {
-                String message = messageSource.getMessage("error.duplicate", null, Locale.getDefault());
+                String message = messageSource.getMessage("error.duplicateEmail", null, Locale.getDefault());
                 result.rejectValue("email", null, message);
                 return "profile";
             }
@@ -57,7 +57,8 @@ public class ProfileUIController extends AbstractUserController {
             try {
                 super.create(userTo);
             } catch (DataIntegrityViolationException dive) {
-                String message = messageSource.getMessage("error.duplicate", null, Locale.getDefault());
+                model.addAttribute("register", true);
+                String message = messageSource.getMessage("error.duplicateEmail", null, Locale.getDefault());
                 result.rejectValue("email", null, message);
                 return "profile";
             }

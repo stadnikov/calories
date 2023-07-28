@@ -25,7 +25,8 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 import static ru.javawebinar.topjava.UserTestData.user;
 import static ru.javawebinar.topjava.util.MealsUtil.createTo;
 import static ru.javawebinar.topjava.util.MealsUtil.getTos;
-import static ru.javawebinar.topjava.util.exception.ErrorType.DATA_NOT_FOUND;
+import static ru.javawebinar.topjava.util.exception.ErrorType.DATA_ERROR;
+import static ru.javawebinar.topjava.util.exception.ErrorType.VALIDATION_ERROR;
 
 class MealRestControllerTest extends AbstractControllerTest {
 
@@ -85,6 +86,31 @@ class MealRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    void updateNotValid() throws Exception {
+        Meal updated = getUpdated();
+        updated.setCalories(0);
+        ResultActions action = perform(MockMvcRequestBuilders.put(REST_URL + MEAL1_ID).contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(user))
+                .content(JsonUtil.writeValue(updated)))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isUnprocessableEntity());
+        Assertions.assertTrue(action.andReturn().getResponse().getContentAsString().contains(VALIDATION_ERROR.toString()));
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateDuplicateDate() throws Exception {
+        Meal updated = getUpdated();
+        updated.setDateTime(meal2.getDateTime());
+        ResultActions action = perform(MockMvcRequestBuilders.put(REST_URL + MEAL1_ID).contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(user))
+                .content(JsonUtil.writeValue(updated)))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isConflict());
+        Assertions.assertTrue(action.andReturn().getResponse().getContentAsString().contains(DATA_ERROR.toString()));
+    }
+
+    @Test
     void createWithLocation() throws Exception {
         Meal newMeal = getNew();
         ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL)
@@ -109,7 +135,7 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .content(JsonUtil.writeValue(newMeal)))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isUnprocessableEntity());
-        Assertions.assertTrue(action.andReturn().getResponse().getContentAsString().contains(DATA_NOT_FOUND.toString()));
+        Assertions.assertTrue(action.andReturn().getResponse().getContentAsString().contains(VALIDATION_ERROR.toString()));
     }
 
     @Test
@@ -122,8 +148,8 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .with(userHttpBasic(user))
                 .content(JsonUtil.writeValue(newMeal)))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isUnprocessableEntity());
-        Assertions.assertTrue(action.andReturn().getResponse().getContentAsString().contains(DATA_NOT_FOUND.toString()));
+                .andExpect(status().isConflict());
+        Assertions.assertTrue(action.andReturn().getResponse().getContentAsString().contains(DATA_ERROR.toString()));
     }
 
     @Test

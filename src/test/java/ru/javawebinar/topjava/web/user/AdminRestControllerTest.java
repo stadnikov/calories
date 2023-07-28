@@ -20,7 +20,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
 import static ru.javawebinar.topjava.UserTestData.*;
-import static ru.javawebinar.topjava.util.exception.ErrorType.DATA_NOT_FOUND;
+import static ru.javawebinar.topjava.util.exception.ErrorType.DATA_ERROR;
+import static ru.javawebinar.topjava.util.exception.ErrorType.VALIDATION_ERROR;
 
 class AdminRestControllerTest extends AbstractControllerTest {
 
@@ -100,6 +101,35 @@ class AdminRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    void updateNotValid() throws Exception {
+        User updated = getUpdated();
+        updated.setPassword("");
+        ResultActions action = perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(admin))
+                .content(jsonWithPassword(updated, updated.getPassword())))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isUnprocessableEntity());
+
+        Assertions.assertTrue(action.andReturn().getResponse().getContentAsString().contains(VALIDATION_ERROR.toString()));
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateDuplicateEmail() throws Exception {
+        User updated = getUpdated();
+        updated.setEmail(admin.getEmail());
+        ResultActions action = perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(admin))
+                .content(jsonWithPassword(updated, updated.getPassword())))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isConflict());
+
+        Assertions.assertTrue(action.andReturn().getResponse().getContentAsString().contains(DATA_ERROR.toString()));
+    }
+
+    @Test
     void createWithLocation() throws Exception {
         User newUser = getNew();
         ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL)
@@ -118,14 +148,14 @@ class AdminRestControllerTest extends AbstractControllerTest {
     @Test
     void createNotValid() throws Exception {
         User newUser = getNew();
-        newUser.setPassword("");
+        newUser.setName("");
         ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(admin))
                 .content(jsonWithPassword(newUser, newUser.getPassword())))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isUnprocessableEntity());
-        Assertions.assertTrue(action.andReturn().getResponse().getContentAsString().contains(DATA_NOT_FOUND.toString()));
+        Assertions.assertTrue(action.andReturn().getResponse().getContentAsString().contains(VALIDATION_ERROR.toString()));
     }
 
     @Test
@@ -138,8 +168,8 @@ class AdminRestControllerTest extends AbstractControllerTest {
                 .with(userHttpBasic(admin))
                 .content(jsonWithPassword(newUser, newUser.getPassword())))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isUnprocessableEntity());
-        Assertions.assertTrue(action.andReturn().getResponse().getContentAsString().contains(DATA_NOT_FOUND.toString()));
+                .andExpect(status().isConflict());
+        Assertions.assertTrue(action.andReturn().getResponse().getContentAsString().contains(DATA_ERROR.toString()));
     }
 
     @Test
