@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -24,11 +25,7 @@ import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ru.javawebinar.topjava.util.exception.ErrorType.*;
@@ -53,8 +50,9 @@ public class ExceptionInfoHandler {
     public ErrorInfo conflict(HttpServletRequest req, DataIntegrityViolationException e) {
         String exceptionMessage =
                 messageSource.getMessage(
-                        req.getRequestURL().indexOf("users") != -1 ? "error.duplicateEmail" : "error.duplicateDate",
-                        null, Locale.getDefault());
+                        e.getRootCause().fillInStackTrace().toString().contains("date_time")
+                                ? "error.duplicateDate" : "error.duplicateEmail",
+                        null, LocaleContextHolder.getLocale());
         Exception exception = new DataIntegrityViolationException(exceptionMessage);
         return logAndGetErrorInfo(req, exception, true, DATA_ERROR);
     }
@@ -63,7 +61,15 @@ public class ExceptionInfoHandler {
     @ExceptionHandler({TransactionSystemException.class, BindException.class,
             IllegalRequestDataException.class, MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
     public ErrorInfo validationError(HttpServletRequest req, Exception e) {
-        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
+        ErrorInfo errorInfo = logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
+        Throwable rootCause = ValidationUtil.getRootCause(e);
+        if (rootCause instanceof BindException bindEx) {
+            List<FieldError> violations = bindEx.getFieldErrors();
+            errorInfo.setDetail(violations.stream()
+                    .map(error -> "[" + error.getField() + "] " + error.getDefaultMessage())
+                    .collect(Collectors.toList()));
+        }
+        return errorInfo;
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -75,28 +81,11 @@ public class ExceptionInfoHandler {
     //    https://stackoverflow.com/questions/538870/should-private-helper-methods-be-static-if-they-can-be-static
     private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception exception, boolean logException, ErrorType errorType) {
         Throwable rootCause = ValidationUtil.getRootCause(exception);
-
-        String checks = "";
-        if (rootCause instanceof ConstraintViolationException) {
-            ConstraintViolationException constraintEx = ((ConstraintViolationException) rootCause);
-            Set<ConstraintViolation<?>> violations = constraintEx.getConstraintViolations();
-            checks = violations.stream()
-                    .map(e -> "[" + e.getPropertyPath() + "] " + e.getMessage())
-                    .collect(Collectors.joining("<br>"));
-        } else if (rootCause instanceof BindException) {
-            BindException bindEx = ((BindException) rootCause);
-            List<FieldError> violations = bindEx.getFieldErrors();
-            checks = violations.stream()
-                    .map(e -> "[" + e.getField() + "] " + e.getDefaultMessage())
-                    .collect(Collectors.joining("<br>"));
-        }
-
         if (logException) {
             log.error(errorType + " at request " + req.getRequestURL(), rootCause);
         } else {
             log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
         }
-        return new ErrorInfo(req.getRequestURL(), errorType,
-                !checks.isEmpty() ? checks : rootCause.getLocalizedMessage());
+        return new ErrorInfo(req.getRequestURL(), errorType, List.of(rootCause.getLocalizedMessage()));
     }
 }
