@@ -26,6 +26,7 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static ru.javawebinar.topjava.util.exception.ErrorType.*;
@@ -48,11 +49,10 @@ public class ExceptionInfoHandler {
     @ResponseStatus(HttpStatus.CONFLICT)  // 409
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ErrorInfo conflict(HttpServletRequest req, DataIntegrityViolationException e) {
-        String stackTrace = e.getRootCause().fillInStackTrace().toString();
         String exceptionMessage =
                 messageSource.getMessage(
-                        stackTrace.contains("date_time") || stackTrace.contains("DATETIME")
-                                ? "error.duplicateDate" : "error.duplicateEmail",
+                        e.getRootCause().getMessage().toLowerCase(Locale.ROOT).contains("users_unique_email_idx")
+                                ? "error.duplicateEmail" : "error.duplicateDate",
                         null, LocaleContextHolder.getLocale());
         Exception exception = new DataIntegrityViolationException(exceptionMessage);
         return logAndGetErrorInfo(req, exception, true, DATA_ERROR);
@@ -67,15 +67,12 @@ public class ExceptionInfoHandler {
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
     @ExceptionHandler(BindException.class)
-    public ErrorInfo bindingError(HttpServletRequest req, Exception e) {
-        ErrorInfo errorInfo = logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
-        Throwable rootCause = ValidationUtil.getRootCause(e);
-        if (rootCause instanceof BindException bindEx) {
-            List<FieldError> violations = bindEx.getFieldErrors();
-            errorInfo.setDetails(violations.stream()
-                    .map(error -> "[" + error.getField() + "] " + error.getDefaultMessage())
-                    .collect(Collectors.toList()));
-        }
+    public ErrorInfo bindingError(HttpServletRequest req, BindException bindEx) {
+        ErrorInfo errorInfo = logAndGetErrorInfo(req, bindEx, false, VALIDATION_ERROR);
+        List<FieldError> violations = bindEx.getFieldErrors();
+        errorInfo.setDetails(violations.stream()
+                .map(error -> "[" + error.getField() + "] " + error.getDefaultMessage())
+                .collect(Collectors.toList()));
         return errorInfo;
     }
 
