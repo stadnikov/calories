@@ -5,15 +5,15 @@ import java.util.List;
 public class ErrorInfo {
     private final String url;
     private final ErrorType type;
-    private List<String> detail;
+    private List<String> details;
 
-    public void setDetail(List<String> detail) {
-        this.detail = detail;
-    }
-
-    public ErrorInfo(CharSequence url, ErrorType type, List<String> detail) {
+    public ErrorInfo(CharSequence url, ErrorType type, List<String> details) {
         this.url = url.toString();
         this.type = type;
-        this.detail = detail;
+        this.details = details;
+    }
+
+    public void setDetails(List<String> details) {
+        this.details = details;
     }
 }

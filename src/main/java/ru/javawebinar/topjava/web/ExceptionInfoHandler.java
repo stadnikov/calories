@@ -48,9 +48,10 @@ public class ExceptionInfoHandler {
     @ResponseStatus(HttpStatus.CONFLICT)  // 409
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ErrorInfo conflict(HttpServletRequest req, DataIntegrityViolationException e) {
+        String stackTrace = e.getRootCause().fillInStackTrace().toString();
         String exceptionMessage =
                 messageSource.getMessage(
-                        e.getRootCause().fillInStackTrace().toString().contains("date_time")
+                        stackTrace.contains("date_time") || stackTrace.contains("DATETIME")
                                 ? "error.duplicateDate" : "error.duplicateEmail",
                         null, LocaleContextHolder.getLocale());
         Exception exception = new DataIntegrityViolationException(exceptionMessage);
@@ -58,19 +59,26 @@ public class ExceptionInfoHandler {
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
-    @ExceptionHandler({TransactionSystemException.class, BindException.class,
-            IllegalRequestDataException.class, MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
+    @ExceptionHandler({TransactionSystemException.class, IllegalRequestDataException.class,
+            MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
     public ErrorInfo validationError(HttpServletRequest req, Exception e) {
+        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
+    }
+
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
+    @ExceptionHandler(BindException.class)
+    public ErrorInfo bindingError(HttpServletRequest req, Exception e) {
         ErrorInfo errorInfo = logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
         Throwable rootCause = ValidationUtil.getRootCause(e);
         if (rootCause instanceof BindException bindEx) {
             List<FieldError> violations = bindEx.getFieldErrors();
-            errorInfo.setDetail(violations.stream()
+            errorInfo.setDetails(violations.stream()
                     .map(error -> "[" + error.getField() + "] " + error.getDefaultMessage())
                     .collect(Collectors.toList()));
         }
         return errorInfo;
     }
+
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
